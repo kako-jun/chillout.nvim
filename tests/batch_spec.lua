@@ -57,7 +57,7 @@ describe("batch", function()
     assert.equals(2, #batches[1])
 
     batched("c")
-    batched("d")  -- triggers second batch
+    batched("d") -- triggers second batch
 
     assert.equals(2, #batches)
     assert.equals(2, #batches[2])
