@@ -9,7 +9,7 @@ Neovim Lua 向けの debounce, throttle, batch ライブラリ。
 
 ## 必要環境
 
-- Neovim >= 0.10.0
+- Neovim >= 0.10
 
 ## インストール
 
