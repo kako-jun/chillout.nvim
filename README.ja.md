@@ -81,9 +81,12 @@ local scroll = chillout.throttle(update_minimap, 100, { leading = true })
 local resize = chillout.throttle(recalc_layout, 200, { leading = false, trailing = true })
 ```
 
-### `chillout.batch(func, wait, opts?)`
+### `chillout.batch(func, wait?, opts?)`
 
 `wait` ミリ秒間の呼び出しをまとめて、引数の配列として一度に処理する関数を作成。
+
+**パラメータ:**
+- `wait` (number|nil): 実行までの待機時間（ミリ秒）。`nil`または`0`の場合、`maxSize`でのみトリガー
 
 **オプション:**
 - `maxSize` (number): 強制実行までの最大バッチサイズ
@@ -94,6 +97,9 @@ local log = chillout.batch(send_logs, 5000, { maxSize = 100 })
 
 -- イベント集約: 200ms間のイベントをまとめる
 local events = chillout.batch(process_events, 200)
+
+-- 回数ベースのみ: タイマーなし、3件溜まったらトリガー
+local collect = chillout.batch(process_items, nil, { maxSize = 3 })
 ```
 
 ## ユースケース

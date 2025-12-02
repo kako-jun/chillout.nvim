@@ -83,9 +83,12 @@ local scroll = chillout.throttle(update_minimap, 100, { leading = true })
 local resize = chillout.throttle(recalc_layout, 200, { leading = false, trailing = true })
 ```
 
-### `chillout.batch(func, wait, opts?)`
+### `chillout.batch(func, wait?, opts?)`
 
 Creates a batched function that collects all calls within `wait` milliseconds and invokes `func` once with an array of all collected arguments.
+
+**Parameters:**
+- `wait` (number|nil): Milliseconds to wait before executing. If `nil` or `0`, only triggers on `maxSize`
 
 **Options:**
 - `maxSize` (number): Maximum batch size before forced execution
@@ -96,6 +99,9 @@ local log = chillout.batch(send_logs, 5000, { maxSize = 100 })
 
 -- Event aggregation: collect for 200ms
 local events = chillout.batch(process_events, 200)
+
+-- Count-based only: no timer, trigger only when 3 items collected
+local collect = chillout.batch(process_items, nil, { maxSize = 3 })
 ```
 
 ## Use Cases
