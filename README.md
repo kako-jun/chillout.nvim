@@ -168,6 +168,16 @@ local on_change = chillout.batch(process_changes, 200)
 - **Feature complete** - Includes options like `maxWait`, `leading/trailing`, `maxSize`
 - **Lightweight** - ~150 lines of code total
 
+## Try the Demo
+
+```bash
+git clone https://github.com/kako-jun/chillout.nvim
+cd chillout.nvim
+nvim -u demo/init.lua
+```
+
+Press `d` for debounce, `t` for throttle, `b` for batch.
+
 ## Contributing
 
 Issues and PRs welcome.

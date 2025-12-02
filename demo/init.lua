@@ -13,6 +13,44 @@ if not ok then
   return
 end
 
+-- Create demo buffer
+local buf = vim.api.nvim_create_buf(false, true)
+vim.api.nvim_set_current_buf(buf)
+vim.bo[buf].buftype = "nofile"
+vim.bo[buf].modifiable = true
+
+local lines = {
+  "chillout.nvim Demo",
+  "",
+  "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "",
+  "What does this plugin do?",
+  "  It does NOT delay your keystrokes.",
+  "  It limits how often the callback function fires.",
+  "",
+  "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "",
+  "Key bindings (try them!):",
+  "",
+  "  d - Debounce: Press repeatedly, wait 2s after stopping to fire",
+  "  t - Throttle: Press repeatedly, fires at most once per 3s",
+  "  b - Batch: Press 5 times to fire with all items at once",
+  "  r - Reset counters",
+  "",
+  "Compare: calls vs fires (e.g., press d 10 times -> fires only 1 time)",
+  "",
+  "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+  "",
+  "TRY THIS: Edit this text while testing!",
+  "Delete words, add lines - this buffer won't be saved.",
+  "",
+  "Use :messages to see the full log.",
+  "",
+}
+
+vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+vim.api.nvim_win_set_cursor(0, { 1, 0 })
+
 -- Counters
 local debounce_calls = 0
 local debounce_execs = 0
@@ -49,7 +87,7 @@ end, { desc = "Throttle demo" })
 local batched = chillout.batch(function(items)
   batch_execs = batch_execs + 1
   print(string.format("[BATCH] Fired! %d items batched (calls %d -> fires %d)", #items, batch_calls, batch_execs))
-end, 999999, { maxSize = 5 })
+end, nil, { maxSize = 5 })
 
 vim.keymap.set("n", "b", function()
   batch_calls = batch_calls + 1
@@ -68,49 +106,4 @@ vim.keymap.set("n", "r", function()
   print("[RESET] Counters reset")
 end, { desc = "Reset counters" })
 
-print("")
-print(
-  "╔══════════════════════════════════════════════════════════════╗"
-)
-print("║                      chillout.nvim Demo                      ║")
-print(
-  "╚══════════════════════════════════════════════════════════════╝"
-)
-print("")
-print("# What does this plugin do?")
-print("")
-print("  It does NOT delay your keystrokes.")
-print("  It limits how often the callback function fires.")
-print("")
-print(
-  "────────────────────────────────────────────────────────────────"
-)
-print("")
-print("# Key bindings")
-print("")
-print("  - d ....... Debounce")
-print("              Press repeatedly, wait 2s after stopping to fire")
-print("")
-print("  - t ....... Throttle")
-print("              Press repeatedly, fires at most once per 3s")
-print("")
-print("  - b ....... Batch")
-print("              Press 5 times to fire with all items at once")
-print("")
-print("  - r ....... Reset counters")
-print("")
-print(
-  "────────────────────────────────────────────────────────────────"
-)
-print("")
-print("# How to see the effect")
-print("")
-print("  Compare: calls vs fires")
-print("")
-print("  Example: press d 10 times -> fires only 1 time")
-print("")
-print("  Use :messages to see the full log.")
-print("")
-print(
-  "────────────────────────────────────────────────────────────────"
-)
+print("chillout.nvim demo loaded! Press d/t/b to test, r to reset.")
