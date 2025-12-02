@@ -6,13 +6,53 @@ NeovimのLua環境において、イベント駆動型で発生する非同期�
 
 「落ち着け (chill out)」- 頻繁なイベントによるパフォーマンス低下を防ぎ、ユーザー体験を向上させる。
 
+**重要**: このプラグインは入力やカーソル移動自体を遅延させるものではない。コールバック関数の実行回数を抑制する。
+
 ## コア機能 (3つ)
 
 | 機能 | API | 概要 |
 |------|-----|------|
-| Debounce | `M.debounce(func, wait)` | 最後の呼び出しから `wait` ms 経過まで実行を遅延。連続呼び出しでリセット。 |
-| Throttle | `M.throttle(func, wait)` | 一度実行後、`wait` ms 経過まで次の実行を抑制。末尾実行方式。 |
-| Batch | `M.batch(func, wait)` | `wait` ms 間の呼び出しをまとめて1回で処理。 |
+| Debounce | `M.debounce(func, wait, opts?)` | 最後の呼び出しから `wait` ms 経過まで実行を遅延。連続呼び出しでリセット。 |
+| Throttle | `M.throttle(func, wait, opts?)` | 一度実行後、`wait` ms 経過まで次の実行を抑制。 |
+| Batch | `M.batch(func, wait, opts?)` | `wait` ms 間の呼び出しをまとめて1回で処理。 |
+
+## オプション
+
+### Debounce
+
+```lua
+chillout.debounce(func, wait, {
+  maxWait = number,  -- 最大待機時間。入力が続いても強制実行
+})
+```
+
+### Throttle
+
+```lua
+chillout.throttle(func, wait, {
+  leading = boolean,   -- 最初の呼び出しで即実行 (default: true)
+  trailing = boolean,  -- 最後の呼び出しを実行 (default: true)
+})
+```
+
+### Batch
+
+```lua
+chillout.batch(func, wait, {
+  maxSize = number,  -- 最大バッチサイズ。N件で即実行
+})
+```
+
+## ユースケース
+
+| ユースケース | 関数 | 設定例 |
+|-------------|------|--------|
+| 検索サジェスト | debounce | `{ maxWait = 3000 }` - 入力中でも3秒で表示 |
+| 自動保存 | debounce | オプションなし - 編集が止まるまで待つ |
+| スクロール追従UI | throttle | `{ leading = true }` - 最初に即更新 |
+| リサイズ完了後処理 | throttle | `{ leading = false, trailing = true }` - 完了後のみ |
+| ログ送信 | batch | `{ maxSize = 100 }` - 100件で即送信 |
+| イベント集約 | batch | オプションなし - 時間ベースで集約 |
 
 ## プロジェクト構造
 
@@ -38,10 +78,19 @@ chillout.nvim/
 タイマー満了 T=500 → 実行 (1回)
 ```
 
-適切なユースケース: LSP診断、入力時のサジェスト（ユーザー操作完了後に処理したい場合）
+maxWait を設定した場合:
+```
+呼び出し T=0      → タイマーセット + maxWaitタイマーセット
+呼び出し T=200    → タイマーリセット (maxWaitはリセットしない)
+呼び出し T=400    → タイマーリセット
+...
+(maxWait=1000)
+T=1000            → maxWait満了、強制実行
+```
 
-### Throttle (Trailing Edge)
+### Throttle
 
+leading=true, trailing=true (デフォルト):
 ```
 呼び出し T=0      → 即時実行 + タイマーセット (実行1回)
 呼び出し T=200    → pending=true (実行なし)
@@ -49,7 +98,13 @@ chillout.nvim/
 タイマー満了 T=500 → pending消化 (実行2回目)
 ```
 
-適切なユースケース: ウィンドウリサイズ、スクロール時の画面更新（頻繁なイベントを間引きたい場合）
+leading=false, trailing=true:
+```
+呼び出し T=0      → pending=true, タイマーセット (実行なし)
+呼び出し T=200    → pending=true (実行なし)
+(wait=500)
+タイマー満了 T=500 → pending消化 (実行1回)
+```
 
 ### Batch
 
@@ -61,7 +116,13 @@ chillout.nvim/
 タイマー満了 T=200        → func([["a"],["b"],["c"]]) 実行
 ```
 
-適切なユースケース: ログ集約、複数イベントの一括処理
+maxSize を設定した場合:
+```
+(maxSize=2)
+呼び出し T=0   args=["a"] → batch=[["a"]], タイマーセット
+呼び出し T=50  args=["b"] → batch=[["a"],["b"]], maxSize到達 → 即実行
+呼び出し T=100 args=["c"] → batch=[["c"]], タイマーセット
+```
 
 ## 実装メモ
 
@@ -72,10 +133,12 @@ chillout.nvim/
 ## テスト実行
 
 ```bash
+cd chillout.nvim
 nvim -u demo/init.lua
 ```
 
 ## 設計方針
 
 - APIは3つだけ。シンプルに保つ
-- 将来の拡張 (leading edge オプション等) は必要になってから追加
+- 各関数に実用的なオプションを1-2個だけ提供
+- デフォルト値は最も一般的なユースケースに合わせる
