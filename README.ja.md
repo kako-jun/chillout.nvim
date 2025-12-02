@@ -160,6 +160,10 @@ local on_change = chillout.batch(process_changes, 200)
 - **機能完備** - `maxWait`, `leading/trailing`, `maxSize` などのオプションを提供
 - **軽量** - 合計約150行のコード
 
+## コントリビュート
+
+Issue や PR を歓迎します。
+
 ## ライセンス
 
 [MIT](LICENSE)
