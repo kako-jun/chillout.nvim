@@ -51,7 +51,7 @@ describe("batch", function()
     end, 50, { maxSize = 2 })
 
     batched("a")
-    batched("b")  -- triggers first batch
+    batched("b") -- triggers first batch
 
     assert.equals(1, #batches)
     assert.equals(2, #batches[1])

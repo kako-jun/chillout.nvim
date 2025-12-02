@@ -11,8 +11,8 @@
 --- @return function throttled_func The throttled function
 local function throttle(func, wait, opts)
   opts = opts or {}
-  local leading = opts.leading ~= false  -- default true
-  local trailing = opts.trailing ~= false  -- default true
+  local leading = opts.leading ~= false -- default true
+  local trailing = opts.trailing ~= false -- default true
 
   local timer = nil
   local last_args = nil
@@ -38,17 +38,21 @@ local function throttle(func, wait, opts)
 
     -- Start cooldown timer
     timer = vim.uv.new_timer()
-    timer:start(wait, 0, vim.schedule_wrap(function()
-      timer:stop()
-      timer:close()
-      timer = nil
+    timer:start(
+      wait,
+      0,
+      vim.schedule_wrap(function()
+        timer:stop()
+        timer:close()
+        timer = nil
 
-      -- If trailing and there were calls during cooldown
-      if trailing and pending then
-        pending = false
-        func(unpack(last_args))
-      end
-    end))
+        -- If trailing and there were calls during cooldown
+        if trailing and pending then
+          pending = false
+          func(unpack(last_args))
+        end
+      end)
+    )
   end
 end
 

@@ -30,9 +30,13 @@ describe("debounce", function()
     end, 100)
 
     debounced()
-    vim.wait(50, function() return false end)
+    vim.wait(50, function()
+      return false
+    end)
     debounced()
-    vim.wait(50, function() return false end)
+    vim.wait(50, function()
+      return false
+    end)
     debounced()
 
     -- Still not executed
@@ -71,7 +75,9 @@ describe("debounce", function()
     -- Keep calling to reset timer
     for _ = 1, 5 do
       debounced()
-      vim.wait(50, function() return false end)
+      vim.wait(50, function()
+        return false
+      end)
     end
 
     -- Should have been forced by maxWait

@@ -68,7 +68,9 @@ describe("throttle", function()
     assert.equals(1, call_count)
 
     -- Wait to ensure no trailing
-    vim.wait(150, function() return false end)
+    vim.wait(150, function()
+      return false
+    end)
 
     -- Still only 1
     assert.equals(1, call_count)
