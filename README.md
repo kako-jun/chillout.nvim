@@ -1,6 +1,15 @@
 # chillout.nvim
 
+[![Tests](https://github.com/kako-jun/chillout.nvim/actions/workflows/test.yml/badge.svg)](https://github.com/kako-jun/chillout.nvim/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Debounce, throttle, and batch for Neovim Lua.
+
+![demo](https://github.com/kako-jun/chillout.nvim/raw/main/assets/demo.gif)
+
+## Requirements
+
+- Neovim >= 0.10.0
 
 ## Installation
 
@@ -98,6 +107,59 @@ local events = chillout.batch(process_events, 200)
 | Log sending | batch | `{ maxSize = 100 }` |
 | Event aggregation | batch | (none) |
 
+## Real World Examples
+
+### Search suggestions (debounce + maxWait)
+
+```lua
+-- Show suggestions after typing stops, but don't wait forever
+local suggest = chillout.debounce(show_suggestions, 300, { maxWait = 2000 })
+```
+
+### Auto-save (debounce)
+
+```lua
+-- Save after editing stops
+local auto_save = chillout.debounce(function()
+  vim.cmd("silent! write")
+end, 1000)
+```
+
+### Scroll tracking UI (throttle + leading)
+
+```lua
+-- Update minimap immediately on scroll, then throttle
+local update_minimap = chillout.throttle(render_minimap, 100, { leading = true })
+```
+
+### Window resize handler (throttle + trailing only)
+
+```lua
+-- Recalculate layout only after resize completes
+local on_resize = chillout.throttle(recalc_layout, 200, { leading = false, trailing = true })
+```
+
+### Log sending (batch + maxSize)
+
+```lua
+-- Send logs in batches of 100 or every 5 seconds
+local send_log = chillout.batch(send_to_server, 5000, { maxSize = 100 })
+```
+
+### Event aggregation (batch)
+
+```lua
+-- Collect file change events and process together
+local on_change = chillout.batch(process_changes, 200)
+```
+
+## Why chillout.nvim?
+
+- **No existing solution** - Neovim lacks a dedicated debounce/throttle/batch library
+- **Neovim native** - Uses `vim.uv` (libuv), no external dependencies
+- **Feature complete** - Includes options like `maxWait`, `leading/trailing`, `maxSize`
+- **Lightweight** - ~150 lines of code total
+
 ## License
 
-MIT
+[MIT](LICENSE)
