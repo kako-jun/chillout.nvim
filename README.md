@@ -162,6 +162,10 @@ local on_change = chillout.batch(process_changes, 200)
 - **Feature complete** - Includes options like `maxWait`, `leading/trailing`, `maxSize`
 - **Lightweight** - ~150 lines of code total
 
+## Contributing
+
+Issues and PRs welcome.
+
 ## License
 
 [MIT](LICENSE)
