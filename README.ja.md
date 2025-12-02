@@ -166,6 +166,16 @@ local on_change = chillout.batch(process_changes, 200)
 - **機能完備** - `maxWait`, `leading/trailing`, `maxSize` などのオプションを提供
 - **軽量** - 合計約150行のコード
 
+## デモを試す
+
+```bash
+git clone https://github.com/kako-jun/chillout.nvim
+cd chillout.nvim
+nvim -u demo/init.lua
+```
+
+`d`でdebounce、`t`でthrottle、`b`でbatchを試せます。
+
 ## コントリビュート
 
 Issue や PR を歓迎します。
