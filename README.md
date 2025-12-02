@@ -9,7 +9,7 @@ Debounce, throttle, and batch for Neovim Lua.
 
 ## Requirements
 
-- Neovim >= 0.10.0
+- Neovim >= 0.10
 
 ## Installation
 
