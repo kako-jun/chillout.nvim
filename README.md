@@ -192,7 +192,7 @@ Run `:checkhealth chillout` to verify your setup.
 - **No existing solution** - Neovim lacks a dedicated debounce/throttle/batch library
 - **Neovim native** - Uses `vim.uv` (libuv), no external dependencies
 - **Feature complete** - Includes options like `maxWait`, `leading/trailing`, `maxSize`
-- **Lightweight** - ~150 lines of code total
+- **Lightweight** - ~260 lines of code total
 
 ## Try the Demo
 

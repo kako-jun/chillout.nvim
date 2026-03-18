@@ -190,7 +190,7 @@ chillout.setup()
 - **既存ソリューションがない** - Neovim には debounce/throttle/batch 専用ライブラリがなかった
 - **Neovim ネイティブ** - `vim.uv` (libuv) を使用、外部依存なし
 - **機能完備** - `maxWait`, `leading/trailing`, `maxSize` などのオプションを提供
-- **軽量** - 合計約150行のコード
+- **軽量** - 合計約260行のコード
 
 ## デモを試す
 
