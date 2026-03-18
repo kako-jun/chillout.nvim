@@ -7,7 +7,7 @@
 
 Debounce, throttle, and batch for Neovim Lua.
 
-![demo](https://github.com/kako-jun/chillout.nvim/raw/main/assets/demo.gif)
+<!-- TODO: demo.gif -->
 
 ## Requirements
 
@@ -20,6 +20,7 @@ Debounce, throttle, and batch for Neovim Lua.
 ```lua
 {
   "kako-jun/chillout.nvim",
+  config = true,  -- optional: calls setup() with defaults
 }
 ```
 
@@ -160,6 +161,31 @@ local send_log = chillout.batch(send_to_server, 5000, { maxSize = 100 })
 -- Collect file change events and process together
 local on_change = chillout.batch(process_changes, 200)
 ```
+
+### `cancel()` / `flush()`
+
+All wrapped functions returned by `debounce()`, `throttle()`, and `batch()` have `.cancel()` and `.flush()` methods:
+
+```lua
+local search = chillout.debounce(run_search, 500)
+
+search("query")   -- starts the timer
+search.cancel()   -- cancel pending execution
+search.flush()    -- execute immediately if pending
+```
+
+### `chillout.setup(opts?)`
+
+Optional setup function for plugin manager compatibility. No configuration needed.
+
+```lua
+-- Called automatically when using lazy.nvim with config = true
+chillout.setup()
+```
+
+## Health Check
+
+Run `:checkhealth chillout` to verify your setup.
 
 ## Why chillout.nvim?
 

@@ -8,13 +8,24 @@ NeovimのLua環境において、イベント駆動型で発生する非同期�
 
 **重要**: このプラグインは入力やカーソル移動自体を遅延させるものではない。コールバック関数の実行回数を抑制する。
 
-## コア機能 (3つ)
+## コア機能 (3つ + ユーティリティ)
 
 | 機能 | API | 概要 |
 |------|-----|------|
 | Debounce | `M.debounce(func, wait, opts?)` | 最後の呼び出しから `wait` ms 経過まで実行を遅延。連続呼び出しでリセット。 |
 | Throttle | `M.throttle(func, wait, opts?)` | 一度実行後、`wait` ms 経過まで次の実行を抑制。 |
 | Batch | `M.batch(func, wait, opts?)` | `wait` ms 間の呼び出しをまとめて1回で処理。 |
+| Setup | `M.setup(opts?)` | lazy.nvim config=true 互換のセットアップ関数。現在オプションなし。 |
+
+### 返り値のメソッド
+
+debounce/throttle/batch が返す関数は以下のメソッドを持つ:
+- `.cancel()` — 保留中の実行をキャンセルし内部状態をクリア
+- `.flush()` — 保留中の呼び出しがあれば即座に実行
+
+### 引数バリデーション
+
+各関数は `vim.validate()` で引数の型チェックを行う。不正な型が渡された場合はエラーを発生させる。
 
 ## オプション
 
@@ -60,11 +71,17 @@ chillout.batch(func, wait, {
 chillout.nvim/
 ├── lua/
 │   └── chillout/
-│       └── init.lua    -- コア実装 (debounce, throttle, batch)
+│       ├── init.lua       -- エントリポイント (setup, re-export)
+│       ├── debounce.lua   -- debounce 実装
+│       ├── throttle.lua   -- throttle 実装
+│       ├── batch.lua      -- batch 実装
+│       └── health.lua     -- :checkhealth chillout
+├── doc/
+│   └── chillout.txt       -- :help chillout (vimdoc)
 ├── demo/
-│   └── init.lua        -- デモ/テスト用
-├── CLAUDE.md           -- 本ファイル
-└── README.md           -- ユーザー向けドキュメント
+│   └── init.lua           -- デモ/テスト用
+├── CLAUDE.md              -- 本ファイル
+└── README.md              -- ユーザー向けドキュメント
 ```
 
 ## 動作仕様
@@ -142,3 +159,6 @@ nvim -u demo/init.lua
 - APIは3つだけ。シンプルに保つ
 - 各関数に実用的なオプションを1-2個だけ提供
 - デフォルト値は最も一般的なユースケースに合わせる
+- 返り値は callable な table (setmetatable + __call)。cancel/flush メソッドを持つ
+- 引数は vim.validate() でバリデーション
+- setup() は空関数だが lazy.nvim 互換のために必須

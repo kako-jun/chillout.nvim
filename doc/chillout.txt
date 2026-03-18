@@ -1,0 +1,142 @@
+*chillout.txt*  Debounce, throttle, and batch for Neovim Lua
+
+Author:  kako-jun
+License: MIT
+URL:     https://github.com/kako-jun/chillout.nvim
+
+==============================================================================
+CONTENTS                                                   *chillout-contents*
+
+  1. Introduction ................................. |chillout-introduction|
+  2. Setup ........................................ |chillout-setup|
+  3. API .......................................... |chillout-api|
+  4. Use Cases .................................... |chillout-use-cases|
+  5. Health Check ................................. |chillout-health|
+
+==============================================================================
+1. INTRODUCTION                                        *chillout-introduction*
+
+chillout.nvim provides debounce, throttle, and batch utilities for Neovim Lua.
+It uses `vim.uv` (libuv) timers natively with no external dependencies.
+
+Requirements:
+- Neovim >= 0.10
+
+==============================================================================
+2. SETUP                                                      *chillout-setup*
+
+With lazy.nvim: >lua
+  {
+    "kako-jun/chillout.nvim",
+    config = true,
+  }
+<
+Or require directly (no setup needed): >lua
+  local chillout = require("chillout")
+<
+                                                            *chillout.setup()*
+chillout.setup({opts?})
+  Optional setup function for plugin manager compatibility.
+  Currently accepts no options.
+
+==============================================================================
+3. API                                                          *chillout-api*
+
+                                                         *chillout.debounce()*
+chillout.debounce({func}, {wait}, {opts?})
+
+  Creates a debounced function that delays invoking {func} until after {wait}
+  milliseconds have elapsed since the last time it was invoked.
+
+  Parameters: ~
+    {func}   (function)  The function to debounce
+    {wait}   (number)    Milliseconds to delay
+    {opts}   (table|nil) Options:
+             - maxWait (number): Maximum time before forced execution
+
+  Returns: ~
+    (function) The debounced function. Also has methods:
+    - `.cancel()`: Cancel any pending execution
+    - `.flush()`:  Execute pending call immediately
+
+  Example: >lua
+    local search = chillout.debounce(run_search, 500, { maxWait = 3000 })
+    search("query")    -- will execute after 500ms of inactivity
+    search.cancel()    -- cancel pending execution
+    search.flush()     -- execute immediately if pending
+<
+
+                                                         *chillout.throttle()*
+chillout.throttle({func}, {wait}, {opts?})
+
+  Creates a throttled function that invokes {func} at most once per {wait}
+  milliseconds.
+
+  Parameters: ~
+    {func}   (function)  The function to throttle
+    {wait}   (number)    Milliseconds to throttle
+    {opts}   (table|nil) Options:
+             - leading  (boolean): Execute on leading edge (default: true)
+             - trailing (boolean): Execute on trailing edge (default: true)
+
+  Returns: ~
+    (function) The throttled function. Also has methods:
+    - `.cancel()`: Cancel any pending trailing execution
+    - `.flush()`:  Execute pending trailing call immediately
+
+  Example: >lua
+    local scroll = chillout.throttle(update_minimap, 100, { leading = true })
+<
+
+                                                            *chillout.batch()*
+chillout.batch({func}, {wait?}, {opts?})
+
+  Creates a batched function that collects all calls within {wait}
+  milliseconds and invokes {func} once with an array of collected arguments.
+
+  Parameters: ~
+    {func}   (function)    The function to batch (receives array of arg arrays)
+    {wait}   (number|nil)  Milliseconds to wait. nil or 0 = maxSize only
+    {opts}   (table|nil)   Options:
+             - maxSize (number): Maximum batch size before forced execution
+
+  Returns: ~
+    (function) The batched function. Also has methods:
+    - `.cancel()`: Cancel pending batch and discard collected items
+    - `.flush()`:  Execute pending batch immediately
+
+  Example: >lua
+    local log = chillout.batch(send_logs, 5000, { maxSize = 100 })
+<
+
+                                                           *chillout.cancel()*
+{wrapped}.cancel()
+
+  Cancels any pending execution and clears internal state. Available on
+  functions returned by debounce(), throttle(), and batch().
+
+                                                            *chillout.flush()*
+{wrapped}.flush()
+
+  Immediately executes the pending call (if any) and clears timers. Available
+  on functions returned by debounce(), throttle(), and batch().
+
+==============================================================================
+4. USE CASES                                              *chillout-use-cases*
+
+  | Use Case             | Function | Options                         |
+  |----------------------|----------|---------------------------------|
+  | Search suggestions   | debounce | { maxWait = 3000 }              |
+  | Auto-save            | debounce | (none)                          |
+  | Scroll tracking UI   | throttle | { leading = true }              |
+  | Resize complete      | throttle | { leading = false }             |
+  | Log sending          | batch    | { maxSize = 100 }               |
+  | Event aggregation    | batch    | (none)                          |
+
+==============================================================================
+5. HEALTH CHECK                                             *chillout-health*
+
+Run `:checkhealth chillout` to verify your setup.
+
+==============================================================================
+ vim:tw=78:ts=8:ft=help:norl:

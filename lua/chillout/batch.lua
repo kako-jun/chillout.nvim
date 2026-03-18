@@ -7,8 +7,14 @@
 --- @param wait? number The number of milliseconds to wait before executing (0 or nil = no timer, only maxSize)
 --- @param opts? { maxSize?: number } Options
 ---   - maxSize: Maximum batch size before forced execution (for log sending etc.)
---- @return function batched_func The batched function
+--- @return function batched_func The batched function (with .cancel() and .flush() methods)
 local function batch(func, wait, opts)
+  vim.validate({
+    func = { func, "function" },
+    wait = { wait, "number", true },
+    opts = { opts, "table", true },
+  })
+
   opts = opts or {}
   local timer = nil
   local items = {}
@@ -26,21 +32,40 @@ local function batch(func, wait, opts)
     end
   end
 
-  return function(...)
-    table.insert(items, { ... })
+  local wrapped = setmetatable({}, {
+    __call = function(_, ...)
+      table.insert(items, { ... })
 
-    -- Flush immediately if maxSize reached
-    if opts.maxSize and #items >= opts.maxSize then
-      flush()
-      return
-    end
+      -- Flush immediately if maxSize reached
+      if opts.maxSize and #items >= opts.maxSize then
+        flush()
+        return
+      end
 
-    -- Start/reset timer (only if wait is specified and > 0)
-    if wait and wait > 0 and not timer then
-      timer = vim.uv.new_timer()
-      timer:start(wait, 0, vim.schedule_wrap(flush))
+      -- Start/reset timer (only if wait is specified and > 0)
+      if wait and wait > 0 and not timer then
+        timer = vim.uv.new_timer()
+        timer:start(wait, 0, vim.schedule_wrap(flush))
+      end
+    end,
+  })
+
+  --- Cancel pending batch and discard collected items.
+  function wrapped.cancel()
+    if timer then
+      timer:stop()
+      timer:close()
+      timer = nil
     end
+    items = {}
   end
+
+  --- Execute pending batch immediately (if any items collected).
+  function wrapped.flush()
+    flush()
+  end
+
+  return wrapped
 end
 
 return batch
